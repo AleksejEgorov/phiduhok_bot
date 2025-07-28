@@ -1,0 +1,8 @@
+telegram_token: POPULATE_TOKEN_HERE
+content_dir: memes
+db_path: memes.db
+allowed_ids:
+  - TYPE
+  - IDS
+log_level: INFO
+log_format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
