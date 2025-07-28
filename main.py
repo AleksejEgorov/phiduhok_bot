@@ -1,4 +1,6 @@
-
+"""
+This is simple bot for memes sharing.
+"""
 import os
 import logging
 import asyncio
@@ -23,9 +25,6 @@ connection = sqlite3.connect(db_path)
 cursor = connection.cursor()
 
 
-
-
-
 async def get_meme_file(meme_caption=''):
     """
     Get a random meme file from the content directory.
@@ -41,7 +40,6 @@ async def get_meme_file(meme_caption=''):
             SELECT file_path FROM memes
             WHERE caption LIKE ?
             ORDER BY RANDOM()
-            LIMIT 1
             ''', ('%' + meme_caption + '%',)
         ).fetchall()
     else:
@@ -51,15 +49,19 @@ async def get_meme_file(meme_caption=''):
             LIMIT 1
         ''').fetchone()
 
+
     logger.info('%s memes found', len(memes))
+
     if len(memes) > 1:
-        meme = random.choice(memes)[0]
+        meme = random.choice(memes)
     elif len(memes) == 1:
-        meme = memes[0][0]
+        meme = memes[0]
     else:
         meme = None
 
     if meme:
+        if isinstance(meme, tuple):
+            meme = meme[0]
         meme_file = os.path.join(conf['content_dir'],meme)
         logger.info('Selected meme file: %s', meme_file)
         return meme_file
@@ -91,7 +93,6 @@ async def handle_message(message):
         ).strip().lower()
 
         meme_file = await get_meme_file(meme_caption_request)
-        print(meme_file)
         if meme_file:
             with open(meme_file, 'rb') as file:
                 await bot.send_photo(
