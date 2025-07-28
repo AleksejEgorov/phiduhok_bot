@@ -47,7 +47,7 @@ async def get_meme_file(meme_caption=''):
             SELECT file_path FROM memes
             ORDER BY RANDOM()
             LIMIT 1
-        ''').fetchone()
+        ''').fetchall()
 
 
     logger.info('%s memes found', len(memes))
@@ -60,10 +60,11 @@ async def get_meme_file(meme_caption=''):
         meme = None
 
     if meme:
-        if isinstance(meme, tuple):
-            meme = meme[0]
-        meme_file = os.path.join(conf['content_dir'],meme)
-        logger.info('Selected meme file: %s', meme_file)
+        meme_file = {
+            'id': meme[0],
+            'file_path': os.path.join(conf['content_dir'],meme[1])
+        }
+        logger.info('Selected meme file: %s', meme_file['file_path'])
         return meme_file
     return None
 
@@ -109,7 +110,7 @@ async def handle_message(message):
         ).strip().lower()
 
         if (meme_file := await get_meme_file(meme_caption_request)):
-            with open(meme_file, 'rb') as file:
+            with open(meme_file['file_path'], 'rb') as file:
                 await bot.send_photo(
                     message.chat.id,
                     file
@@ -148,7 +149,7 @@ async def handle_delete(message):
         )
 
         if (meme_file := await get_meme_file(meme_caption_request)):
-            with open(meme_file, 'rb') as file:
+            with open(meme_file['file_path'], 'rb') as file:
                 logger.info(
                     'Send remove confirmation for %s to %s',
                     meme_file,
@@ -159,7 +160,7 @@ async def handle_delete(message):
                     file,
                     reply_markup=gen_markup(
                         {
-                            os.path.basename(meme_file).replace('.jpg',''): 'Удолить',
+                            meme_file['id']: 'Удолить',
                             'cb_cancel': 'Не надо'
                         }
                     )
@@ -188,9 +189,13 @@ async def callback_query(call):
         return
 
     logger.info('Received remove approve from %s',call.from_user.username)
-    cursor.execute('DELETE FROM memes WHERE file_path = ?', (call.data + '.jpg',))
+    file_name = cursor.execute(
+        'SELECT file_path FROM memes WHERE id = ?',
+        (call.data,)
+    ).fetchall()[0][0]
+    cursor.execute('DELETE FROM memes WHERE id = ?', (call.data,))
     connection.commit()
-    os.remove(os.path.join(content_dir,call.data + '.jpg'))
+    os.remove(os.path.join(content_dir,file_name))
     await bot.send_message(
         call.chat.id,
         'И? Лучше стало?'
