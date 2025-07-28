@@ -77,7 +77,7 @@ async def start_message(message):
         'Ну?'
     )
 
-@bot.message_handler(regexp="мем")
+@bot.message_handler(regexp="(дай|хочу|покажи|пришли) мем")
 async def handle_message(message):
     """
     Handle memes request.
