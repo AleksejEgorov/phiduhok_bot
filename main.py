@@ -12,7 +12,7 @@ from telebot.async_telebot import AsyncTeleBot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 logger = logging.getLogger(__name__)
-BOT_NAME = 'phiduhok_bot'
+
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 # Import conf
@@ -22,6 +22,7 @@ with open('config.yaml', encoding='utf-8') as conf_file:
 bot = AsyncTeleBot(conf['telegram_token'])
 content_dir = conf['content_dir']
 db_path = conf['db_path']
+bot_name = conf['bot_name']
 connection = sqlite3.connect(db_path)
 cursor = connection.cursor()
 
@@ -95,13 +96,13 @@ async def start_message(message):
         message.chat.id,
         'Ну?'
     )
-REQUEST_REGEX = f"(@{BOT_NAME},? )?(дай |хочу |покажи |пришли )?мем( дай| хочу| покажи| пришли)?"
+REQUEST_REGEX = f"(@{bot_name},? )?(дай |хочу |покажи |пришли )?мем( дай| хочу| покажи| пришли)?"
 @bot.message_handler(regexp=REQUEST_REGEX)
 async def handle_message(message):
     """
     Handle memes request.
     """
-    if message.chat.type == "private" or message.text.startswith('@' + BOT_NAME):
+    if message.chat.type == "private" or message.text.startswith('@' + bot_name):
         logger.info('Received message: %s', message.text)
         meme_caption_request = re.sub(
             rf'{REQUEST_REGEX}',
@@ -127,7 +128,7 @@ async def handle_delete(message):
     """
     Handle meme delete request.
     """
-    if message.chat.type == "private" or message.text.startswith('@' + BOT_NAME):
+    if message.chat.type == "private" or message.text.startswith('@' + bot_name):
         logger.info('Received message: %s', message.text)
         meme_caption_request = re.sub(
             r'^.*удоли',
@@ -209,7 +210,7 @@ async def handle_add(message):
     """
     Handle incoming photos.
     """
-    if message.chat.type == "private" or message.caption.startswith('@' + BOT_NAME):
+    if message.chat.type == "private" or message.caption.startswith('@' + bot_name):
         if message.from_user.id not in conf['allowed_add_ids']:
             await bot.send_message(
                 message.chat.id,
@@ -235,7 +236,7 @@ async def handle_add(message):
             VALUES (?, ?)
             ''', (
                 meme_file_name,
-                message.caption.replace('@' + BOT_NAME, '').strip().lower()
+                message.caption.replace('@' + bot_name, '').strip().lower()
             )
         )
         connection.commit()
@@ -263,7 +264,7 @@ async def handle_other(message):
     """
     Handle other mediatypes.
     """
-    if message.text.startswith('@' + BOT_NAME) or message.chat.type == "private":
+    if message.text.startswith('@' + bot_name) or message.chat.type == "private":
         logger.warning('No photo found in message: %s', message.text)
         await bot.send_message(
             message.chat.id,
