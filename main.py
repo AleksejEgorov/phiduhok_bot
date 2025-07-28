@@ -37,14 +37,14 @@ async def get_meme_file(meme_caption=''):
     if meme_caption:
         memes = cursor.execute(
             '''
-            SELECT id,file_path FROM memes
+            SELECT id,file_path,caption FROM memes
             WHERE caption LIKE ?
             ORDER BY RANDOM()
             ''', ('%' + meme_caption + '%',)
         ).fetchall()
     else:
         memes = cursor.execute('''
-            SELECT id,file_path FROM memes
+            SELECT id,file_path,caption FROM memes
             ORDER BY RANDOM()
             LIMIT 1
         ''').fetchall()
@@ -62,9 +62,10 @@ async def get_meme_file(meme_caption=''):
     if meme:
         meme_file = {
             'id': meme[0],
-            'file_path': os.path.join(conf['content_dir'],meme[1])
+            'file_path': os.path.join(conf['content_dir'],meme[1]),
+            'caption': meme[2]
         }
-        logger.info('Selected meme file: %s', meme_file['file_path'])
+        logger.info('Selected meme: %s', meme_file)
         return meme_file
     return None
 
