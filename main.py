@@ -112,7 +112,8 @@ async def handle_photo(message):
         if message.from_user.id not in conf['allowed_ids']:
             await bot.send_message(
                 message.chat.id,
-                f"`{message.from_user.id}` и ты знаешь, куда с этим идти!"
+                f"`{message.from_user.id}` и ты знаешь, куда с этим идти. А от абы кого мемы не берём!",
+                parse_mode='markdown'
             )
             return
         logger.info('Received photo from %s', message.from_user.username)
