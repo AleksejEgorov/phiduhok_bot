@@ -197,6 +197,7 @@ async def callback_query(call):
     cursor.execute('DELETE FROM memes WHERE id = ?', (call.data,))
     connection.commit()
     os.remove(os.path.join(content_dir,file_name))
+    await bot.delete_message(call.message.chat.id,call.message.id)
     await bot.send_message(
         call.message.chat.id,
         'И? Лучше стало?'
@@ -248,6 +249,7 @@ async def handle_photo(message):
 @bot.message_handler(
     func=lambda message: True,
     content_types=[
+        'text',
         'audio',
         'voice',
         'video',
@@ -265,8 +267,9 @@ async def handle_other(message):
         logger.warning('No photo found in message: %s', message.text)
         await bot.send_message(
             message.chat.id,
-            'Только картинки принимаем!'
+            'Только картинки принимаем! Ну или попроси мем.'
         )
+        return
 
 
 if __name__ == '__main__':
