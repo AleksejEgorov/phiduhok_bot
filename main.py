@@ -128,7 +128,7 @@ async def handle_delete(message):
     if message.chat.type == "private" or message.text.startswith('@' + BOT_NAME):
         logger.info('Received message: %s', message.text)
         meme_caption_request = re.sub(
-            r'^.+ удоли',
+            r'^.*удоли',
             '',
             message.text,
             flags=re.IGNORECASE
