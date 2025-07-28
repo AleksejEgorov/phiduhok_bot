@@ -37,14 +37,14 @@ async def get_meme_file(meme_caption=''):
     if meme_caption:
         memes = cursor.execute(
             '''
-            SELECT file_path FROM memes
+            SELECT id,file_path FROM memes
             WHERE caption LIKE ?
             ORDER BY RANDOM()
             ''', ('%' + meme_caption + '%',)
         ).fetchall()
     else:
         memes = cursor.execute('''
-            SELECT file_path FROM memes
+            SELECT id,file_path FROM memes
             ORDER BY RANDOM()
             LIMIT 1
         ''').fetchall()
