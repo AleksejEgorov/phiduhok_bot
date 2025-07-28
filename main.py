@@ -9,6 +9,7 @@ import random
 import re
 import yaml
 from telebot.async_telebot import AsyncTeleBot
+from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 logger = logging.getLogger(__name__)
 BOT_NAME = 'phiduhok_bot'
@@ -67,6 +68,22 @@ async def get_meme_file(meme_caption=''):
     return None
 
 
+def gen_markup(buttons):
+    '''
+    Generates reply keyboard for TG bot
+    '''
+    req_markup = InlineKeyboardMarkup()
+    inline_buttons = []
+
+    for key in list(buttons.keys()):
+        inline_buttons.append(InlineKeyboardButton(buttons[key], callback_data=key))
+
+    req_markup.add(*inline_buttons, row_width=len(list(buttons.keys())))
+    # s = yaml.dump_all([req_markup])
+    # print(s)
+    return req_markup
+
+
 @bot.message_handler(commands=['start'])
 async def start_message(message):
     '''
@@ -102,6 +119,70 @@ async def handle_message(message):
                 message.chat.id,
                 'Mемов не завезли!'
             )
+
+@bot.message_handler(regexp="удоли")
+async def handle_delete(message):
+    """
+    Handle meme delete request.
+    """
+    if message.chat.type == "private" or message.text.startswith('@' + BOT_NAME):
+        logger.info('Received message: %s', message.text)
+        meme_caption_request = re.sub(
+            r'^.+ удоли',
+            '',
+            message.text,
+            flags=re.IGNORECASE
+        ).strip().lower()
+
+        if not meme_caption_request:
+            await bot.send_message(
+                message.chat.id,
+                'И шо тут разносить, я тебя спрашиваю?'
+            )
+
+        if (meme_file := await get_meme_file(meme_caption_request)):
+            with open(meme_file, 'rb') as file:
+                await bot.send_photo(
+                    message.chat.id,
+                    file,
+                    reply_markup=gen_markup(
+                        {
+                            meme_file: 'Удолить',
+                            'cb_cancel': 'Не надо'
+                        }
+                    )
+                )
+
+        else:
+            await bot.send_message(
+                message.chat.id,
+                'Mема не завезли!'
+            )
+
+@bot.callback_query_handler(func=lambda call: True)
+async def callback_query(call):
+    """Handles remove callback
+    """
+    if call.from_user.id not in conf['allowed_ids']:
+        await bot.send_message(
+            call.chat.id,
+            "Ходят тут всякие...",
+            parse_mode='markdown'
+        )
+        return
+    if call.data == 'cb_cancel':
+        await bot.answer_callback_query(call.id, "Оно и к лучшему.")
+        await bot.delete_message(call.message.chat.id,call.message.id)
+        return
+
+    cursor.execute('DELETE FROM memes WHERE file_path = ?', (os.path.basename(call.data),))
+    connection.commit()
+    os.remove(call.data)
+    await bot.send_message(
+        call.chat.id,
+        'И? Лучше стало?'
+    )
+
 
 @bot.message_handler(content_types=['photo'])
 async def handle_photo(message):
