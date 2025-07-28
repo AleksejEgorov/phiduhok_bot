@@ -95,7 +95,7 @@ async def start_message(message):
         message.chat.id,
         'Ну?'
     )
-REQUEST_REGEX = f"(@{BOT_NAME},? )?(дай |хочу |покажи |пришли )?мем (дай|хочу|покажи|пришли)?"
+REQUEST_REGEX = f"(@{BOT_NAME},? )?(дай |хочу |покажи |пришли )?мем( дай| хочу| покажи| пришли)?"
 @bot.message_handler(regexp=REQUEST_REGEX)
 async def handle_message(message):
     """
