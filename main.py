@@ -176,7 +176,7 @@ async def handle_delete(message):
 async def callback_query(call):
     """Handles remove callback
     """
-    if call.from_user.id not in conf['allowed_ids']:
+    if call.from_user.id not in conf['allowed_delete_ids']:
         await bot.send_message(
             call.message.chat.id,
             "Ходят тут всякие...",
@@ -205,12 +205,12 @@ async def callback_query(call):
 
 
 @bot.message_handler(content_types=['photo'])
-async def handle_photo(message):
+async def handle_add(message):
     """
     Handle incoming photos.
     """
     if message.chat.type == "private" or message.caption.startswith('@' + BOT_NAME):
-        if message.from_user.id not in conf['allowed_ids']:
+        if message.from_user.id not in conf['allowed_add_ids']:
             await bot.send_message(
                 message.chat.id,
                 f"`{message.from_user.id}`"

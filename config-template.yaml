@@ -1,7 +1,10 @@
 telegram_token: POPULATE_TOKEN_HERE
 content_dir: memes
 db_path: memes.db
-allowed_ids:
+allowed_add_ids:
+  - TYPE
+  - IDS
+allowed_delete_ids:
   - TYPE
   - IDS
 log_level: INFO
