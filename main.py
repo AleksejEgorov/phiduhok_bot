@@ -95,8 +95,8 @@ async def start_message(message):
         message.chat.id,
         'Ну?'
     )
-
-@bot.message_handler(regexp="(дай|хочу|покажи|пришли) мем")
+REQUEST_REGEX = f"(@{BOT_NAME},? )?(дай |хочу |покажи |пришли )?мем (дай|хочу|покажи|пришли)?"
+@bot.message_handler(regexp=REQUEST_REGEX)
 async def handle_message(message):
     """
     Handle memes request.
@@ -104,7 +104,7 @@ async def handle_message(message):
     if message.chat.type == "private" or message.text.startswith('@' + BOT_NAME):
         logger.info('Received message: %s', message.text)
         meme_caption_request = re.sub(
-            r'^.+ мем',
+            rf'{REQUEST_REGEX}',
             '',
             message.text,
             flags=re.IGNORECASE
