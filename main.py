@@ -139,9 +139,21 @@ async def handle_delete(message):
                 message.chat.id,
                 'И шо тут разносить, я тебя спрашиваю?'
             )
+            return
+
+        logger.info(
+            'Received remove request %s from %s',
+            message.from_user.username,
+            meme_caption_request
+        )
 
         if (meme_file := await get_meme_file(meme_caption_request)):
             with open(meme_file, 'rb') as file:
+                logger.info(
+                    'Send remove confirmation for %s to %s',
+                    meme_file,
+                    message.from_user.username
+                )
                 await bot.send_photo(
                     message.chat.id,
                     file,
@@ -152,7 +164,6 @@ async def handle_delete(message):
                         }
                     )
                 )
-
         else:
             await bot.send_message(
                 message.chat.id,
@@ -171,10 +182,12 @@ async def callback_query(call):
         )
         return
     if call.data == 'cb_cancel':
+        logger.info('Received remove cancel from %s',call.from_user.username)
         await bot.answer_callback_query(call.id, "Оно и к лучшему.")
         await bot.delete_message(call.message.chat.id,call.message.id)
         return
 
+    logger.info('Received remove approve from %s',call.from_user.username)
     cursor.execute('DELETE FROM memes WHERE file_path = ?', (os.path.basename(call.data),))
     connection.commit()
     os.remove(call.data)
@@ -193,7 +206,9 @@ async def handle_photo(message):
         if message.from_user.id not in conf['allowed_ids']:
             await bot.send_message(
                 message.chat.id,
-                f"`{message.from_user.id}` и ты знаешь, куда с этим идти. А от абы кого мемы не берём!",
+                f"`{message.from_user.id}`"
+                + "и ты знаешь, куда с этим идти. "
+                + "А от абы кого мемы не берём!",
                 parse_mode='markdown'
             )
             return
