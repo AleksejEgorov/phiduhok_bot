@@ -177,7 +177,7 @@ async def callback_query(call):
     """
     if call.from_user.id not in conf['allowed_ids']:
         await bot.send_message(
-            call.chat.id,
+            call.message.chat.id,
             "Ходят тут всякие...",
             parse_mode='markdown'
         )
@@ -197,7 +197,7 @@ async def callback_query(call):
     connection.commit()
     os.remove(os.path.join(content_dir,file_name))
     await bot.send_message(
-        call.chat.id,
+        call.message.chat.id,
         'И? Лучше стало?'
     )
 
