@@ -29,9 +29,8 @@ async def get_meme_file(meme_caption=''):
     """
     Get a random meme file from the content directory.
     """
-    memes_count = cursor.execute('SELECT COUNT(*) FROM memes').fetchone()[0]
 
-    if memes_count == 0:
+    if cursor.execute('SELECT COUNT(*) FROM memes').fetchone()[0] == 0:
         logger.warning('No memes found in %s', content_dir)
         return None
     if meme_caption:
@@ -78,7 +77,7 @@ async def start_message(message):
         'Ну?'
     )
 
-@bot.message_handler(regexp="(дай|хочу|покажи|пришли) мем")
+@bot.message_handler(regexp="мем")
 async def handle_message(message):
     """
     Handle memes request.
@@ -92,8 +91,7 @@ async def handle_message(message):
             flags=re.IGNORECASE
         ).strip().lower()
 
-        meme_file = await get_meme_file(meme_caption_request)
-        if meme_file:
+        if (meme_file := await get_meme_file(meme_caption_request)):
             with open(meme_file, 'rb') as file:
                 await bot.send_photo(
                     message.chat.id,
