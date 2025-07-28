@@ -159,7 +159,7 @@ async def handle_delete(message):
                     file,
                     reply_markup=gen_markup(
                         {
-                            meme_file: 'Удолить',
+                            os.path.basename(meme_file): 'Удолить',
                             'cb_cancel': 'Не надо'
                         }
                     )
@@ -188,9 +188,9 @@ async def callback_query(call):
         return
 
     logger.info('Received remove approve from %s',call.from_user.username)
-    cursor.execute('DELETE FROM memes WHERE file_path = ?', (os.path.basename(call.data),))
+    cursor.execute('DELETE FROM memes WHERE file_path = ?', (call.data,))
     connection.commit()
-    os.remove(call.data)
+    os.remove(os.path.join(content_dir,call.data))
     await bot.send_message(
         call.chat.id,
         'И? Лучше стало?'
